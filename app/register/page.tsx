@@ -1,27 +1,31 @@
 import { redirect } from "next/navigation"
+import { prisma } from "@/lib/prisma"
+import bcrypt from "bcryptjs"
+import Link from "next/link"
 
-export default function RegisterPage({
+export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: { error?: string }
+  searchParams: Promise<{ error?: string }>
 }) {
+  const { error } = await searchParams
+
   async function register(formData: FormData) {
     "use server"
 
-    const res = await fetch(`${process.env.NEXTAUTH_URL}/api/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: formData.get("name"),
-        email: formData.get("email"),
-        password: formData.get("password"),
-      }),
-    })
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
+    const name = formData.get("name") as string
 
-    if (!res.ok) {
-      const { error } = await res.json()
-      redirect(`/register?error=${encodeURIComponent(error ?? "Registration failed")}`)
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) {
+      redirect(`/register?error=${encodeURIComponent("An account with this email already exists")}`)
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+    await prisma.user.create({
+      data: { email, name: name || null, password: hashedPassword },
+    })
 
     redirect("/login")
   }
@@ -31,8 +35,8 @@ export default function RegisterPage({
       <div className="w-full max-w-sm space-y-6 px-4">
         <h1 className="text-2xl font-semibold text-center">Create an account</h1>
 
-        {searchParams.error && (
-          <p className="text-sm text-red-500 text-center">{searchParams.error}</p>
+        {error && (
+          <p className="text-sm text-red-500 text-center">{error}</p>
         )}
 
         <form action={register} className="space-y-4">
@@ -85,6 +89,13 @@ export default function RegisterPage({
             Create account
           </button>
         </form>
+
+        <p className="text-sm text-center text-gray-500">
+          Already have an account?{" "}
+          <Link href="/login" className="text-black font-medium underline">
+            Sign in
+          </Link>
+        </p>
       </div>
     </main>
   )
