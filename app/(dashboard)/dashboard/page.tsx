@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import { PLANS, PlanKey } from "@/lib/stripe"
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -29,6 +30,11 @@ export default async function DashboardPage() {
   }
   const setupDone = Object.values(setup).filter(Boolean).length
 
+  const subPlan = user?.subscriptionPlan as PlanKey | null
+  const subStatus = user?.subscriptionStatus
+  const isTrialing = subStatus === "trialing"
+  const hasSubscription = !!(user?.stripeSubscriptionId && subStatus !== "canceled")
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -40,6 +46,57 @@ export default async function DashboardPage() {
           Here's what's happening with your content pipeline.
         </p>
       </div>
+
+      {/* Subscription status */}
+      {!hasSubscription ? (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-amber-900">No active plan</p>
+            <p className="text-xs text-amber-700 mt-0.5">Start your 7-day free trial — no credit card charged until day 8.</p>
+          </div>
+          <Link
+            href="/billing"
+            className="text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white px-4 py-1.5 rounded-lg transition-colors shrink-0"
+          >
+            View Plans →
+          </Link>
+        </div>
+      ) : (
+        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
+              <span className="text-white text-xs font-bold">
+                {subPlan ? subPlan[0].toUpperCase() : "?"}
+              </span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-gray-900">
+                  {subPlan ? PLANS[subPlan].name : "Active"} Plan
+                </span>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium border ${
+                  isTrialing
+                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                    : "bg-green-50 text-green-700 border-green-200"
+                }`}>
+                  {isTrialing ? "Trial" : "Active"}
+                </span>
+              </div>
+              {isTrialing && user.trialEndsAt && (
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Free trial ends {new Date(user.trialEndsAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                </p>
+              )}
+            </div>
+          </div>
+          <Link
+            href="/billing"
+            className="text-xs text-gray-500 hover:text-gray-700 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            Manage
+          </Link>
+        </div>
+      )}
 
       {/* Setup banner */}
       {setupDone < 3 && (

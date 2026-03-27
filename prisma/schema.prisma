@@ -18,6 +18,13 @@ model User {
   websiteUrl       String?
   websiteContext   Json?
   websiteScrapedAt DateTime?
+  stripeCustomerId       String?
+  stripeSubscriptionId   String?
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+  subscriptionPlan       String?
+  subscriptionStatus     String?
+  trialEndsAt            DateTime?
   accounts         Account[]
   sessions       Session[]
   shopifyStore   ShopifyStore?

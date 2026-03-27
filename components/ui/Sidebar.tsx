@@ -11,6 +11,7 @@ const navItems = [
   { href: "/generate", label: "Generate", icon: "✦" },
   { href: "/posts", label: "My Posts", icon: "≡" },
   { href: "/schedule", label: "Schedule", icon: "◷" },
+  { href: "/billing", label: "Billing", icon: "◉" },
 ]
 
 export default function Sidebar({ userName }: { userName: string }) {

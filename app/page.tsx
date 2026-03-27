@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import Link from "next/link"
+import { PLANS } from "@/lib/stripe"
 
 export default async function Home() {
   const session = await auth()
@@ -129,6 +130,69 @@ export default async function Home() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="py-24 px-6 bg-white/[0.02] border-y border-white/5">
+        <div className="max-w-4xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-violet-400 text-center mb-3">Pricing</p>
+          <h2 className="text-3xl font-bold text-center mb-3">Simple, transparent pricing</h2>
+          <p className="text-sm text-gray-400 text-center mb-2">
+            Every plan comes with a <span className="text-violet-400 font-semibold">7-day free trial</span>. No credit card charged until day 8.
+          </p>
+          <p className="text-xs text-gray-500 text-center mb-12">Cancel anytime, no questions asked.</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {(Object.entries(PLANS) as [string, typeof PLANS[keyof typeof PLANS]][]).map(([key, plan]) => {
+              const isPopular = key === "premium"
+              return (
+                <div
+                  key={key}
+                  className={`relative rounded-2xl border p-6 flex flex-col ${
+                    isPopular
+                      ? "border-violet-500/50 bg-white/[0.05] shadow-lg shadow-violet-900/20"
+                      : "border-white/8 bg-white/[0.02]"
+                  }`}
+                >
+                  {isPopular && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold bg-violet-600 text-white px-3 py-0.5 rounded-full">
+                      Most Popular
+                    </span>
+                  )}
+
+                  <div className="mb-5">
+                    <div className="text-sm font-semibold text-white mb-1">{plan.name}</div>
+                    <div>
+                      <span className="text-3xl font-extrabold text-white">${plan.price}</span>
+                      <span className="text-xs text-gray-400">/month</span>
+                    </div>
+                    <p className="text-[11px] text-violet-400 mt-1.5 font-medium">7 days free — no card until trial ends</p>
+                  </div>
+
+                  <ul className="space-y-2 mb-6 flex-1">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-1.5 text-xs text-gray-400">
+                        <span className="text-violet-400 mt-0.5 shrink-0">✓</span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    href="/register"
+                    className={`text-xs font-semibold text-center py-2.5 rounded-xl transition-colors ${
+                      isPopular
+                        ? "bg-violet-600 hover:bg-violet-500 text-white"
+                        : "bg-white/10 hover:bg-white/15 text-white border border-white/10"
+                    }`}
+                  >
+                    Start free trial
+                  </Link>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
