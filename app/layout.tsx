@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SocialAI — AI Content Engine for Ecommerce",
-  description: "Generate and schedule high-converting social posts from your Shopify store using AI.",
+  title: "Flarvio — Expert Social Media Management Powered by AI",
+  description: "AI-powered social media content and scheduling for ecommerce brands. Premium content with your branding from only $99/mo.",
 };
 
 export default function RootLayout({
